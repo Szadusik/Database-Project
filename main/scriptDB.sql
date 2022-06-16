@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Czas generowania: 05 Cze 2022, 19:55
+-- Czas generowania: 05 Cze 2022, 19:09
 -- Wersja serwera: 8.0.29
 -- Wersja PHP: 8.1.6
 
@@ -15,95 +15,13 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
 
 --
 -- Baza danych: `zameldowania`
 --
-CREATE DATABASE IF NOT EXISTS `zameldowania` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS `zameldowania` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `zameldowania`;
-
-DELIMITER $$
---
--- Procedury
---
-CREATE DEFINER=`root`@`localhost` PROCEDURE `apartaments_full_addresses` ()  DETERMINISTIC BEGIN
-SELECT CONCAT('ul.',B.`ulica`,' ',B.`numer`,'/',L.`numer_lokalu`,' ',B.`kod_pocztowy`) FROM `budynek` B,`lokal` L where B.`ID_Budynku`= L.`ID_Budynku`;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `data_about_habitant` (IN `PESEL` VARCHAR(11) CHARSET utf8mb4)  DETERMINISTIC BEGIN
-	CALL validate_PESEL(PESEL);
-    SELECT CONCAT(O.imie,' ',O.nazwisko) as "Imie i nazwisko", M.numer_telefonu, CONCAT('ul.',B.ulica,' ',B.numer,'/',L.numer_lokalu,' ', B.kod_pocztowy) as "Zameldowany w",Z.data_zameldowania from `osoba` O, `mieszkaniec` M, `zameldowanie` Z, `budynek` B, `lokal` L where M.PESEL = Z.PESEL and O.PESEL = M.PESEL and L.ID_lokalu = Z.Lokal and B.ID_Budynku = L.ID_budynku and BINARY O.PESEL = BINARY PESEL;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `receive_contact_data` ()  DETERMINISTIC BEGIN
-	SELECT O.PESEL,O.imie,O.nazwisko,M.numer_telefonu FROM `osoba` O, `mieszkaniec` M where O.PESEL = M.PESEL;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `receive_recent_checkins` (IN `beginYear` DATE, IN `endYear` DATE)  DETERMINISTIC BEGIN
-	SELECT CONCAT('ul.',B.ulica,' ',B.numer,'/',L.numer_lokalu) as 'Mieszkanie',CONCAT(O.imie,' ',O.nazwisko),Z.data_zameldowania  from `zameldowanie` Z, `osoba` O, `mieszkaniec` M, `budynek` B, `lokal` L where M.PESEL = Z.PESEL and O.PESEL = M.PESEL and L.ID_lokalu = Z.Lokal and B.ID_Budynku = L.ID_budynku AND (Z.data_zameldowania BETWEEN beginYear and endYear);
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `validate_PESEL` (IN `PESEL` VARCHAR(11))  DETERMINISTIC NO SQL BEGIN
-	DECLARE i INT;
-    DECLARE checks INT;
-    DECLARE factors VARCHAR(10);
-    SET i = 1;
-    SET factors = '1379137913';
-    SET checks = 0;
-    
-    loop_label: LOOP
-    	IF (i > 10) THEN
-        	LEAVE  loop_label;
-        END IF;
-        
-        IF (SUBSTRING(PESEL,i,1) REGEXP '^[0-9]+$') THEN
-        	SET checks = checks + CAST(SUBSTRING(factors,i,1) AS UNSIGNED)*CAST(SUBSTRING(PESEL,i,1) AS UNSIGNED);
-        ELSE
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Given string is not a PESEL (PESEL consists only numerical values)';
-        END IF;
-        SET i = i + 1;
-    END LOOP;
-    IF (checks mod 10 != 10 - CAST(SUBSTRING(PESEL,11,1) AS UNSIGNED)) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Given PESEL is wrong (validation did not pass)';
-    END IF;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `validate_phone_number` (IN `telephone` VARCHAR(12))  DETERMINISTIC NO SQL BEGIN
-	DECLARE i INT;
-    SET i = 2;
-	IF  SUBSTRING(telephone,1,1) != '+' THEN
-    	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Telephone number has to begin with "+" sign';
-    END IF;
-    
-    loop_label: LOOP
-    	IF (i > 12) THEN
-        	LEAVE  loop_label;
-        END IF;
-        
-        IF NOT (SUBSTRING(telephone,i,1) REGEXP '^[0-9]+$') THEN
-        	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Telephone number can consists of only numbers (except "+" sign at the
-            beginning)';
-        END IF;
-        SET i = i + 1;
-    END LOOP;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `validate_postal_code` (IN `cod` VARCHAR(6))  DETERMINISTIC NO SQL BEGIN
-    IF NOT (SUBSTRING(cod,1,2) REGEXP '^[0-9]+$') THEN
-           SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'First part of postal code is not a number when it has to be';
-    END IF;
-    
-    IF NOT (SUBSTRING(cod,4,3) REGEXP '^[0-9]+$') THEN
-           SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Second part of postal code is not a number when it has to be';
-    END IF;
-    
-    IF (SUBSTRING(cod,3,1) != '-') THEN
-           SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Could not find a "-" sign in correct place which separates two parts';
-    END IF;
-END$$
-
-DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -114,10 +32,10 @@ DELIMITER ;
 CREATE TABLE `budynek` (
   `ID_Budynku` int NOT NULL,
   `numer` int NOT NULL,
-  `ulica` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_as_cs NOT NULL,
-  `dzielnica` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_as_cs DEFAULT NULL,
-  `kod_pocztowy` varchar(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_as_cs NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `ulica` varchar(30) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL,
+  `dzielnica` varchar(50) CHARACTER SET utf8 COLLATE utf8_polish_ci DEFAULT NULL,
+  `kod_pocztowy` varchar(6) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Zrzut danych tabeli `budynek`
@@ -216,9 +134,9 @@ DELIMITER ;
 CREATE TABLE `logi` (
   `ID` int UNSIGNED NOT NULL,
   `tabela` varchar(30) DEFAULT NULL,
-  `operacja` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `operacja` varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   `czas` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Zrzut danych tabeli `logi`
@@ -292,10 +210,10 @@ CREATE TABLE `lokal` (
   `ID_lokalu` int NOT NULL,
   `ID_budynku` int NOT NULL,
   `powierzchnia` int NOT NULL,
-  `typ_lokalu` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci NOT NULL,
+  `typ_lokalu` varchar(20) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL,
   `numer_lokalu` int NOT NULL,
-  `wlasciciel` varchar(70) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `wlasciciel` varchar(70) CHARACTER SET utf8 COLLATE utf8_polish_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Zrzut danych tabeli `lokal`
@@ -420,11 +338,11 @@ DELIMITER ;
 --
 
 CREATE TABLE `mieszkaniec` (
-  `PESEL` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci NOT NULL,
-  `stan_cywilny` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci DEFAULT NULL,
+  `PESEL` varchar(11) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL,
+  `stan_cywilny` varchar(20) CHARACTER SET utf8 COLLATE utf8_polish_ci DEFAULT NULL,
   `zatrudniony` tinyint(1) DEFAULT NULL,
-  `numer_telefonu` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `numer_telefonu` varchar(12) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Zrzut danych tabeli `mieszkaniec`
@@ -521,12 +439,12 @@ DELIMITER ;
 --
 
 CREATE TABLE `osoba` (
-  `PESEL` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci NOT NULL,
-  `imie` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci NOT NULL,
-  `nazwisko` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci NOT NULL,
+  `PESEL` varchar(11) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL,
+  `imie` varchar(30) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL,
+  `nazwisko` varchar(30) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL,
   `data_urodzenia` date NOT NULL,
-  `dodatkowe_informacje` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_ro_0900_ai_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `dodatkowe_informacje` varchar(250) CHARACTER SET utf8 COLLATE utf8_polish_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Zrzut danych tabeli `osoba`
@@ -644,9 +562,9 @@ DELIMITER ;
 CREATE TABLE `zameldowanie` (
   `ID_zameldowania` int NOT NULL,
   `Lokal` int NOT NULL,
-  `PESEL` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_pl_0900_ai_ci NOT NULL,
+  `PESEL` varchar(11) CHARACTER SET utf8 COLLATE utf8_polish_ci NOT NULL,
   `data_zameldowania` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Zrzut danych tabeli `zameldowanie`

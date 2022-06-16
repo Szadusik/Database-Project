@@ -384,37 +384,37 @@ INSERT INTO `mieszkaniec` (`PESEL`, `stan_cywilny`, `zatrudniony`, `numer_telefo
 -- Wyzwalacze `mieszkaniec`
 --
 DELIMITER $$
-CREATE TRIGGER `After_delete_mieszkaniec` AFTER DELETE ON `mieszkaniec` FOR EACH ROW BEGIN 
+CREATE TRIGGER `After_mieszkaniec_delete` AFTER DELETE ON `mieszkaniec` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('mieszkaniec','Usunięto rekord',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `After_insert_mieszkaniec` AFTER INSERT ON `mieszkaniec` FOR EACH ROW BEGIN 
+CREATE TRIGGER `After_mieszkaniec_insert` AFTER INSERT ON `mieszkaniec` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('mieszkaniec','Dodano nowy rekord',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `After_update_mieszkaniec` AFTER UPDATE ON `mieszkaniec` FOR EACH ROW BEGIN 
+CREATE TRIGGER `After_mieszkaniec_update` AFTER UPDATE ON `mieszkaniec` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('mieszkaniec','Rekord został zaktualizowany',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `Before_delete_mieszkaniec` BEFORE DELETE ON `mieszkaniec` FOR EACH ROW BEGIN 
+CREATE TRIGGER `Before_mieszkaniec_delete` BEFORE DELETE ON `mieszkaniec` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('mieszkaniec','Próba usunięcia rekordu',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `Before_insert_mieszkaniec` BEFORE INSERT ON `mieszkaniec` FOR EACH ROW BEGIN 
+CREATE TRIGGER `Before_mieszkaniec_insert` BEFORE INSERT ON `mieszkaniec` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('mieszkaniec','Próba dodania nowego rekordu',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `Before_update_mieszkaniec` BEFORE UPDATE ON `mieszkaniec` FOR EACH ROW BEGIN 
+CREATE TRIGGER `Before_mieszkaniec_update` BEFORE UPDATE ON `mieszkaniec` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('mieszkaniec','Próba aktualizacji rekordu',NOW()); 
 END
 $$
@@ -542,13 +542,13 @@ END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `validate_osoba_insert` BEFORE INSERT ON `osoba` FOR EACH ROW BEGIN 
+CREATE TRIGGER `validate_PESEL_insert` BEFORE INSERT ON `osoba` FOR EACH ROW BEGIN 
 	CALL validate_PESEL(NEW.PESEL);
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `validate_osoba_update` BEFORE UPDATE ON `osoba` FOR EACH ROW BEGIN CALL validate_PESEL(NEW.PESEL); 
+CREATE TRIGGER `validate_PESEL_update` BEFORE UPDATE ON `osoba` FOR EACH ROW BEGIN CALL validate_PESEL(NEW.PESEL); 
 END
 $$
 DELIMITER ;
@@ -602,24 +602,24 @@ INSERT INTO `zameldowanie` (`ID_zameldowania`, `Lokal`, `PESEL`, `data_zameldowa
 -- Wyzwalacze `zameldowanie`
 --
 DELIMITER $$
-CREATE TRIGGER `After_delete_zameldowanie` AFTER DELETE ON `zameldowanie` FOR EACH ROW BEGIN 
+CREATE TRIGGER `After_zameldowanie_delete` AFTER DELETE ON `zameldowanie` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('zameldowanie','Usunięto rekord',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `After_insert_zameldowanie` AFTER INSERT ON `zameldowanie` FOR EACH ROW BEGIN INSERT INTO logi(tabela,operacja,czas) VALUES ('zameldowanie','Utworzono nowy rekord',NOW()); 
+CREATE TRIGGER `After_zameldowanie_insert` AFTER INSERT ON `zameldowanie` FOR EACH ROW BEGIN INSERT INTO logi(tabela,operacja,czas) VALUES ('zameldowanie','Utworzono nowy rekord',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `Before_delete_zameldowanie` BEFORE DELETE ON `zameldowanie` FOR EACH ROW BEGIN 
+CREATE TRIGGER `Before_zameldowanie_delete` BEFORE DELETE ON `zameldowanie` FOR EACH ROW BEGIN 
 INSERT INTO logi(tabela,operacja,czas) VALUES ('zameldowanie','Próba usunięcia rekordu',NOW()); 
 END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `Before_insert_zameldowanie` BEFORE INSERT ON `zameldowanie` FOR EACH ROW BEGIN INSERT INTO logi(tabela,operacja,czas) VALUES ('zameldowanie','Próba utworzenia nowego rekordu',NOW());
+CREATE TRIGGER `Before_zameldowanie_insert` BEFORE INSERT ON `zameldowanie` FOR EACH ROW BEGIN INSERT INTO logi(tabela,operacja,czas) VALUES ('zameldowanie','Próba utworzenia nowego rekordu',NOW());
 END
 $$
 DELIMITER ;

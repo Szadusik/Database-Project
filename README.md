@@ -42,7 +42,7 @@ After that process I have decided to create a schema with tables which were goin
 
 ## Procedures
 
-* **validate_PESEL(IN : PESEL varchar(11))** - Checks if given string is a valid PESEL (`Polish Government ID`). On input it takes a string and determines if it is a correct PESEL by using specific method destribed by official sources.
+* **validate_PESEL(IN : PESEL varchar(11))** - Checks if given string is a valid PESEL (Polish Government ID). On input it takes a string and determines if it is a correct PESEL by using specific method destribed by official sources.
 If validation results in a failure, the proper status message will be shown.
 
 * **validate_phone_number(IN: number varchar(12))** - Takes on input a string and checks if it is a valid phone number in format `+xxyyyyyyyyy` where x and y are numbers from 0 to 9. If validation results in a failure, the proper status message will be shown. 
@@ -61,6 +61,6 @@ If validation results in a failure, the proper status message will be shown.
 
 All triggers inside the database can be described by one of formulas written below:
 
-* **(`before`|`after`)`_`(`table_name`)`_`(`insert`|`update`|`delete`)** - For a given record that matches all rows of table defined by **table_name** that is either added to the table, updated or just deleted from it, the trigger saves a new record inside `Logs` table describing operation that takes place. Mentioned record is saved into `Logs` either before the operation is fully done (when the database tries to do the task) or when it is successfull and the requested operation is done.
+* **(before | after)\_(table_name)\_(insert | update | delete)** - For a given record that matches all rows of table defined by **table_name** that is either added to the table, updated or just deleted from it, the trigger saves a new record inside `Logs` table describing operation that takes place. Mentioned record is saved into `Logs` either before the operation is fully done (when the database tries to do the task) or when it is successfull and the requested operation is done.
 
-* **`validate_field_name_`(`insert`|`update`)** - For a given record that has a matching column defined by **field_name** that is either added to the table or updated, it will check if data provided for the column is valid by calling a one of validation procedures mentioned above. Validation procedures will deal with incorrect input accordingly to their error management.
+* **validate_field_name_(insert | update)** - For a given record that has a matching column defined by **field_name** that is either added to the table or updated, it will check if data provided for the column is valid by calling a one of validation procedures mentioned above. Validation procedures will deal with incorrect input accordingly to their error management.
